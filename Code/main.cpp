@@ -29,4 +29,33 @@ struct UserAuth
     }
 };
 
+UserAuth* currentUser = nullptr;
+
+
+bool authenticateUser() 
+{
+    string email, password;
+    
+    cout << "\n========== LOGIN REQUIRED ==========" << endl;
+    cout << "Enter your email: ";
+    cin >> email;
+    
+    cout << "Enter your password: ";
+    cin >> password;
+    
+    // Accept any non-empty credentials
+    if (!email.empty() && !password.empty()) 
+    {
+        
+        currentUser = new UserAuth(email, password);
+        cout << "✅ Login successful! Welcome to Password Manager." << endl;
+        return true;
+    } 
+    else 
+    {   
+        cout << "❌ Email and password cannot be empty! Access denied." << endl;
+        return false;
+    }
+}
+
 
