@@ -58,4 +58,19 @@ bool authenticateUser()
     }
 }
 
+bool verifyPassword() 
+{
+    string inputPassword;
+    cout << "\nEnter your password to view passwords: ";
+    cin >> inputPassword;
+    
+    if (currentUser && inputPassword == currentUser->password) {
+        cout << "✅ Password verified!" << endl;
+        return true;
+    } else {
+        cout << "❌ Incorrect password! Access denied." << endl;
+        return false;
+    }
+}
+
 
