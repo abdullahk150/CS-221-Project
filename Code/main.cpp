@@ -73,4 +73,40 @@ bool verifyPassword()
     }
 }
 
+bool checkAndSuggestStrength(const string& password) 
+{
+    bool hasUpper = false;
+    bool hasDigit = false;
+    bool hasSymbol = false;
+
+    for (char c : password) 
+    {
+        if (!hasUpper && isupper(static_cast<unsigned char>(c))) hasUpper = true;
+        if (!hasDigit && isdigit(static_cast<unsigned char>(c))) hasDigit = true;
+        if (!hasSymbol && !isalnum(static_cast<unsigned char>(c))) hasSymbol = true;
+        if (hasUpper && hasDigit && hasSymbol) break;
+    }
+
+    if (hasUpper && hasDigit && hasSymbol) 
+    {
+        cout << "Password looks strong." << '\n';
+        return true;
+    }
+
+    cout << "Password could be stronger. Consider adding:" << '\n';
+    if (!hasUpper) 
+    {
+        cout << "- Uppercase letters (A-Z)" << '\n';
+    }
+    if (!hasDigit) 
+    {
+        cout << "- Numbers (0-9)" << '\n';
+    }
+    if (!hasSymbol) 
+    {
+        cout << "- Symbols (!@#$%^&* etc.)" << '\n';
+    }
+    return false;
+}
+
 
