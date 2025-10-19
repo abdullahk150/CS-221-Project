@@ -58,4 +58,208 @@ bool authenticateUser()
     }
 }
 
+bool verifyPassword() 
+{
+    string inputPassword;
+    cout << "\nEnter your password to view passwords: ";
+    cin >> inputPassword;
+    
+    if (currentUser && inputPassword == currentUser->password) {
+        cout << "✅ Password verified!" << endl;
+        return true;
+    } else {
+        cout << "❌ Incorrect password! Access denied." << endl;
+        return false;
+    }
+}
+
+bool checkAndSuggestStrength(const string& password) 
+{
+    bool hasUpper = false;
+    bool hasDigit = false;
+    bool hasSymbol = false;
+
+    for (char c : password) 
+    {
+        if (!hasUpper && isupper(static_cast<unsigned char>(c))) hasUpper = true;
+        if (!hasDigit && isdigit(static_cast<unsigned char>(c))) hasDigit = true;
+        if (!hasSymbol && !isalnum(static_cast<unsigned char>(c))) hasSymbol = true;
+        if (hasUpper && hasDigit && hasSymbol) break;
+    }
+
+    if (hasUpper && hasDigit && hasSymbol) 
+    {
+        cout << "Password looks strong." << '\n';
+        return true;
+    }
+
+    cout << "Password could be stronger. Consider adding:" << '\n';
+    if (!hasUpper) 
+    {
+        cout << "- Uppercase letters (A-Z)" << '\n';
+    }
+    if (!hasDigit) 
+    {
+        cout << "- Numbers (0-9)" << '\n';
+    }
+    if (!hasSymbol) 
+    {
+        cout << "- Symbols (!@#$%^&* etc.)" << '\n';
+    }
+    return false;
+}
+
+struct PasswordManager 
+{
+    PasswordNode* head;
+
+    PasswordManager() 
+    {
+        head = nullptr;
+    }
+
+    void addPassword() 
+    {
+        string account, pass;
+
+        cin.ignore(); // clear leftover newline
+        cout << "\nEnter Account Name (e.g., Gmail, Facebook, Bank): ";
+        getline(cin, account);
+
+        cout << "Enter Password for " << account << ": ";
+        getline(cin, pass);
+
+        // Check strength and suggest improvements (does not block saving)
+        checkAndSuggestStrength(pass);
+
+        PasswordNode* newNode = new PasswordNode(account, pass);
+
+        if (!head) 
+        {
+            head = newNode;
+        } else 
+        {
+            PasswordNode* temp = head;
+            while (temp->next) temp = temp->next;
+            temp->next = newNode;
+        }
+
+        cout << "✅ Password for " << account << " added successfully!\n";
+    }
+
+void viewPasswords() 
+    {
+        // First verify user's password before showing passwords
+        if (!verifyPassword()) 
+        {
+            return; // Exit if password verification fails
+        }
+        
+        if (!head) 
+        {
+            cout << "\nNo passwords saved yet.\n";
+            return;
+        }
+
+        PasswordNode* temp = head;
+        cout << "\n---- Your Stored Passwords ----\n";
+        int count = 1;
+        while (temp) 
+        {
+            cout << count << ". Account: " << temp->accountName << endl;
+            cout << "   Password: " << temp->password << endl;
+            cout << "   ---------------------------\n";
+            temp = temp->next;
+            count++;
+        }
+    }
+    
+    // Method to clear all passwords (for logout)
+    void clearAllPasswords() 
+    {
+        PasswordNode* temp = head;
+        while (temp) 
+        {
+            PasswordNode* toDelete = temp;
+            temp = temp->next;
+            delete toDelete;
+        }
+        head = nullptr;
+    }
+};
+
+// Function to logout and allow new user login
+bool logout() 
+{
+    cout << "\n========== LOGOUT ==========" << endl;
+    cout << "Are you sure you want to logout? (y/n): ";
+    char choice;
+    cin >> choice;
+    
+    if (choice == 'y' || choice == 'Y') 
+    {
+        cout << "✅ Logged out successfully!" << endl;
+        return true;
+    }
+    return false;
+}
+
+int main() 
+{
+    PasswordManager pm;
+    int choice;
+    bool loggedIn = false;
+
+    do {
+        if (!loggedIn) 
+        {
+        
+            if (!authenticateUser()) 
+            {
+                cout << "Program terminated due to failed authentication." << endl;
+                return 0;
+            }
+            loggedIn = true;
+        }
+        
+        cout << "\n====== PASSWORD MANAGER ======" << endl;
+        cout << "Logged in as: " << currentUser->email << endl;
+        cout << "1. Add Password" << endl;
+        cout << "2. View All Passwords" << endl;
+        cout << "3. Logout" << endl;
+        cout << "4. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) 
+        {
+            case 1:
+                pm.addPassword();
+                break;
+            case 2:
+                pm.viewPasswords();
+                break;
+            case 3:
+                if (logout()) 
+                {
+                    pm.clearAllPasswords(); 
+                    delete currentUser;
+                    currentUser = nullptr;
+                    loggedIn = false;
+                }
+                break;
+            case 4:
+                cout << "Exiting..." << endl;
+                break;
+            default:
+                cout << "Invalid choice!" << endl;
+                break;
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}
+
+
 
