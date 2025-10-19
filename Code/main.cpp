@@ -146,7 +146,6 @@ struct PasswordManager
 
         cout << "✅ Password for " << account << " added successfully!\n";
     }
-};
 
 void viewPasswords() 
     {
@@ -187,7 +186,7 @@ void viewPasswords()
         }
         head = nullptr;
     }
-
+};
 
 // Function to logout and allow new user login
 bool logout() 
