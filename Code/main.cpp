@@ -146,6 +146,63 @@ struct PasswordManager
 
         cout << "✅ Password for " << account << " added successfully!\n";
     }
+};
+
+void viewPasswords() 
+    {
+        // First verify user's password before showing passwords
+        if (!verifyPassword()) 
+        {
+            return; // Exit if password verification fails
+        }
+        
+        if (!head) 
+        {
+            cout << "\nNo passwords saved yet.\n";
+            return;
+        }
+
+        PasswordNode* temp = head;
+        cout << "\n---- Your Stored Passwords ----\n";
+        int count = 1;
+        while (temp) 
+        {
+            cout << count << ". Account: " << temp->accountName << endl;
+            cout << "   Password: " << temp->password << endl;
+            cout << "   ---------------------------\n";
+            temp = temp->next;
+            count++;
+        }
+    }
+    
+    // Method to clear all passwords (for logout)
+    void clearAllPasswords() 
+    {
+        PasswordNode* temp = head;
+        while (temp) 
+        {
+            PasswordNode* toDelete = temp;
+            temp = temp->next;
+            delete toDelete;
+        }
+        head = nullptr;
+    }
+
+
+// Function to logout and allow new user login
+bool logout() 
+{
+    cout << "\n========== LOGOUT ==========" << endl;
+    cout << "Are you sure you want to logout? (y/n): ";
+    char choice;
+    cin >> choice;
+    
+    if (choice == 'y' || choice == 'Y') 
+    {
+        cout << "✅ Logged out successfully!" << endl;
+        return true;
+    }
+    return false;
 }
 
 
