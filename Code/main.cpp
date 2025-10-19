@@ -205,5 +205,62 @@ bool logout()
     return false;
 }
 
+int main() 
+{
+    PasswordManager pm;
+    int choice;
+    bool loggedIn = false;
+
+    do {
+        if (!loggedIn) 
+        {
+        
+            if (!authenticateUser()) 
+            {
+                cout << "Program terminated due to failed authentication." << endl;
+                return 0;
+            }
+            loggedIn = true;
+        }
+        
+        cout << "\n====== PASSWORD MANAGER ======" << endl;
+        cout << "Logged in as: " << currentUser->email << endl;
+        cout << "1. Add Password" << endl;
+        cout << "2. View All Passwords" << endl;
+        cout << "3. Logout" << endl;
+        cout << "4. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) 
+        {
+            case 1:
+                pm.addPassword();
+                break;
+            case 2:
+                pm.viewPasswords();
+                break;
+            case 3:
+                if (logout()) 
+                {
+                    pm.clearAllPasswords(); 
+                    delete currentUser;
+                    currentUser = nullptr;
+                    loggedIn = false;
+                }
+                break;
+            case 4:
+                cout << "Exiting..." << endl;
+                break;
+            default:
+                cout << "Invalid choice!" << endl;
+                break;
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}
+
 
 
