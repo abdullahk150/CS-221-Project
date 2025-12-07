@@ -334,11 +334,11 @@ void recordViewAttempt(bool success)
     viewAttempts.push({ success });
 }
 
-bool lastKViewAttemptsFailed(size_t k)
+bool lastKViewAttemptsFailed(int k)
 {
     if (viewAttempts.size() < k) return false;
     int failed = 0;
-    for (size_t i = 0; i < k; ++i)
+    for (int i = 0; i < k; ++i)
     {
         ViewAttempt a;
         if (viewAttempts.getFromEnd(i, a))
