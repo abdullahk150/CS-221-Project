@@ -348,7 +348,11 @@ bool lastKViewAttemptsFailed(size_t k)
 
 string xorCipher(const string& data, const string& key)
 {
-    if (key.empty()) return data;
+    if (key.empty()) 
+    {
+        return data;
+    }
+
     string out = data;
     for (size_t i = 0; i < data.size(); ++i)
     {
@@ -371,27 +375,44 @@ string decryptPassword(const string& encryptedPassword)
 
 bool isValidEmail(const string& email) 
 {
-    if (email.empty()) return false;
+    if (email.empty()) 
+    {
+        return false;
+    }
     
     // Check if email contains @ symbol
     size_t atPos = email.find('@');
-    if (atPos == string::npos || atPos == 0) return false;
+    if (atPos == string::npos || atPos == 0) 
+    {
+        return false;
+    }
     
     // Check if there's text before @
-    if (atPos == 0) return false;
+    if (atPos == 0) 
+    {
+        return false;
+    }
     
     // Extract domain part (after @)
     string domain = email.substr(atPos + 1);
-    if (domain.empty()) return false;
+    if (domain.empty()) 
+    {
+        return false;
+    }
     
     // Check if domain contains a dot (for extension like .com, .org, etc.)
     size_t dotPos = domain.find('.');
-    if (dotPos == string::npos || dotPos == 0) return false;
+    if (dotPos == string::npos || dotPos == 0) 
+    {
+        return false;
+    }
     
     // Check if extension after dot is at least 2 characters (like .com, .org, .net)
-    if (dotPos < domain.length() - 1) {
+    if (dotPos < domain.length() - 1) 
+    {
         string extension = domain.substr(dotPos + 1);
-        if (extension.length() >= 2) {
+        if (  extension.length() >= 2 ) 
+        {
             return true;
         }
     }
@@ -426,9 +447,21 @@ bool checkAndSuggestStrength(const string& password)
     }
 
     cout << "⚠️ Password could be stronger. Consider adding:\n";
-    if (!hasUpper) cout << "   - Uppercase letters (A-Z)\n";
-    if (!hasDigit) cout << "   - Numbers (0-9)\n";
-    if (!hasSymbol) cout << "   - Symbols (!@#$%^&* etc.)\n";
+    if (!hasUpper) 
+    {
+        cout << "   - Uppercase letters (A-Z)\n";
+    }
+
+    if (!hasDigit) 
+    {
+        cout << "   - Numbers (0-9)\n";
+    }
+
+    if (!hasSymbol) 
+    {
+        cout << "   - Symbols (!@#$%^&* etc.)\n";
+    }
+    
     return false;
 }
 
