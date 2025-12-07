@@ -88,13 +88,13 @@ struct ViewAttempt
     bool success;
 };
 
-const size_t MAX_VIEW_HISTORY = 10;
+const int MAX_VIEW_HISTORY = 10;
 
 struct ViewAttemptQueue
 {
     ViewAttempt buffer[MAX_VIEW_HISTORY];
-    size_t count;
-    size_t startIndex;
+    int count;
+    int startIndex;
 
     ViewAttemptQueue()
     {
@@ -106,7 +106,7 @@ struct ViewAttemptQueue
     {
         if (count < MAX_VIEW_HISTORY)
         {
-            size_t insertIndex = (startIndex + count) % MAX_VIEW_HISTORY;
+            int insertIndex = (startIndex + count) % MAX_VIEW_HISTORY;
             buffer[insertIndex] = attempt;
             ++count;
         }
@@ -117,16 +117,20 @@ struct ViewAttemptQueue
         }
     }
 
-    bool getFromEnd(size_t reverseIndex, ViewAttempt& out) const
+    bool getFromEnd(int reverseIndex, ViewAttempt& out) const
     {
-        if (reverseIndex >= count) return false;
-        size_t lastIndex = (startIndex + count - 1) % MAX_VIEW_HISTORY;
-        size_t idx = (lastIndex + MAX_VIEW_HISTORY - (reverseIndex % MAX_VIEW_HISTORY)) % MAX_VIEW_HISTORY;
+        if (reverseIndex >= count) 
+        {
+            return false;
+        }
+
+        int lastIndex = (startIndex + count - 1) % MAX_VIEW_HISTORY;
+        int idx = (lastIndex + MAX_VIEW_HISTORY - (reverseIndex % MAX_VIEW_HISTORY)) % MAX_VIEW_HISTORY;
         out = buffer[idx];
         return true;
     }
 
-    size_t size() const 
+    int size() const 
     { 
         return count;
     }
@@ -637,7 +641,7 @@ struct PasswordManager
         action.accountName = account;
         action.newPassword = encrypted;
         undoStack.push(action);
-        redoStack.clear(); // Clear redo stack after new action
+        redoStack.clear(); 
 
         cout << "✅ Password for " << account << " added successfully!\n";
     }
@@ -662,7 +666,7 @@ struct PasswordManager
             return;
         }
 
-        // Get all PasswordNode pointers from BST in sorted order
+      
         const int MAX_ACCOUNTS = 1000;
         PasswordNode* sortedNodes[MAX_ACCOUNTS];
         int nodeCount = bst.getAllNodes(sortedNodes, MAX_ACCOUNTS);
@@ -758,7 +762,7 @@ struct PasswordManager
         action.accountName = account;
         action.oldPassword = nodeToDelete->password; // Store encrypted password
         undoStack.push(action);
-        redoStack.clear(); // Clear redo stack after new action
+        redoStack.clear(); 
 
         // Remove from BST first (just removes the BST node, not the PasswordNode)
         bst.remove(nodeToDelete);
