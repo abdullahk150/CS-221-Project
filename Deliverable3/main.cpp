@@ -152,7 +152,7 @@ struct AccountBST
 {
     BSTNode* root;
 
-    // Constructor
+
     AccountBST()
     {
         root = nullptr;
