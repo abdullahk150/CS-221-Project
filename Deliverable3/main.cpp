@@ -334,7 +334,7 @@ void recordViewAttempt(bool success)
 bool lastKViewAttemptsFailed(size_t k)
 {
     if (viewAttempts.size() < k) return false;
-    size_t failed = 0;
+    int failed = 0;
     for (size_t i = 0; i < k; ++i)
     {
         ViewAttempt a;
@@ -354,7 +354,7 @@ string xorCipher(const string& data, const string& key)
     }
 
     string out = data;
-    for (size_t i = 0; i < data.size(); ++i)
+    for (int i = 0; i < data.size(); ++i)
     {
         out[i] = static_cast<char>(data[i] ^ key[i % key.size()]);
     }
@@ -918,7 +918,8 @@ struct PasswordManager
             if (!head)
             {
                 head = newNode;
-            } else 
+            } 
+            else 
             {
                 PasswordNode* temp = head;
                 while (temp->next) temp = temp->next;
