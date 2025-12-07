@@ -381,7 +381,7 @@ bool isValidEmail(const string& email)
     }
     
     // Check if email contains @ symbol
-    size_t atPos = email.find('@');
+    int atPos = email.find('@');
     if (atPos == string::npos || atPos == 0) 
     {
         return false;
@@ -401,23 +401,13 @@ bool isValidEmail(const string& email)
     }
     
     // Check if domain contains a dot (for extension like .com, .org, etc.)
-    size_t dotPos = domain.find('.');
+    int dotPos = domain.find('.');
     if (dotPos == string::npos || dotPos == 0) 
     {
         return false;
     }
     
-    // Check if extension after dot is at least 2 characters (like .com, .org, .net)
-    if (dotPos < domain.length() - 1) 
-    {
-        string extension = domain.substr(dotPos + 1);
-        if (  extension.length() >= 2 ) 
-        {
-            return true;
-        }
-    }
-    
-    return false;
+    return true;
 }
 
 bool checkAndSuggestStrength(const string& password) 
