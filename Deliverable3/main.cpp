@@ -470,7 +470,7 @@ bool authenticateUser()
         // Validate email format
         if (isValidEmail(email))
         {
-            break; // Valid email, exit loop
+            break; 
         }
         else
         {
@@ -536,7 +536,7 @@ bool logout()
 
 struct PasswordManager 
 {
-    PasswordNode* head;
+    PasswordNode* head = nullptr;
     AccountBST bst;  // BST stores pointers to PasswordNodes for fast searching
 
     PasswordManager() 
@@ -579,25 +579,15 @@ struct PasswordManager
 
     // Add a new password
     void addPassword() 
-    {
-        string account, pass;
-
+    {   
         cin.ignore();
+        string account, pass;
         
         // Loop until non-empty account name is entered
         while (true)
         {
             cout << "\nEnter Account Name (e.g., Gmail, Facebook, Bank): ";
             getline(cin, account);
-            
-            // Remove leading and trailing whitespace
-            size_t start = account.find_first_not_of(" \t\n\r");
-            if (start != string::npos)
-            {
-                account = account.substr(start);
-                size_t end = account.find_last_not_of(" \t\n\r");
-                account = account.substr(0, end + 1);
-            }
             
             if (!account.empty())
             {
@@ -625,13 +615,18 @@ struct PasswordManager
         
         PasswordNode* newNode = new PasswordNode(account, encrypted);
 
-        if (!head) 
+        if (head == nullptr) 
         {
             head = newNode;
-        } else 
+        } 
+        else 
         {
             PasswordNode* temp = head;
-            while (temp->next) temp = temp->next;
+            while (temp->next != nullptr) 
+            {
+               temp = temp->next;
+            }
+            
             temp->next = newNode;
         }
 
@@ -1083,7 +1078,7 @@ int main()
                 // Invalid input (non-numeric)
                 cout << "❌ Invalid input! Please enter a number between 1 and 8.\n";
                 cin.clear(); // Clear error flags
-                cin.ignore(10000, '\n'); // Ignore remaining input
+                cin.ignore(10000, '\n');
             }
         }
 
