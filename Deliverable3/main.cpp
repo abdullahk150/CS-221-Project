@@ -126,7 +126,10 @@ struct ViewAttemptQueue
         return true;
     }
 
-    size_t size() const { return count; }
+    size_t size() const 
+    { 
+        return count;
+    }
 };
 
 // BST Node that stores a pointer to PasswordNode
@@ -215,7 +218,12 @@ struct AccountBST
     // Helper function to find and delete a node from BST
     BSTNode* deleteHelper(BSTNode* node, PasswordNode* passwordNodeToDelete)
     {
-        if (node == nullptr) return nullptr;
+        if (node == nullptr) 
+        
+        
+        {
+            return nullptr;
+        }
 
         string accountName = passwordNodeToDelete->accountName;
         string nodeAccountName = node->passwordNodePtr->accountName;
@@ -1028,16 +1036,16 @@ int main()
         cout << "7. Logout" << endl;
         cout << "8. Exit" << endl;
         
-        // Validate menu input
+        
         while (true)
         {
             cout << "Enter your choice: ";
             if (cin >> choice)
             {
-                // Check if input is within valid range
+                
                 if (choice >= 1 && choice <= 8)
                 {
-                    break; // Valid input, exit loop
+                    break;
                 }
                 else
                 {
