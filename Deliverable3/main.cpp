@@ -138,7 +138,7 @@ struct BSTNode
     PasswordNode* passwordNodePtr;  // Pointer to the actual PasswordNode in linked list
     BSTNode* left;
     BSTNode* right;
-
+    
     BSTNode(PasswordNode* ptr)
     {
         passwordNodePtr = ptr;
@@ -147,7 +147,7 @@ struct BSTNode
     }
 };
 
-// Binary Search Tree structure for account names (stores pointers to PasswordNode)
+// Binary Search Tree structure for storing account names (stores pointers to PasswordNode)
 struct AccountBST
 {
     BSTNode* root;
@@ -160,7 +160,7 @@ struct AccountBST
 
     BSTNode* insertHelper(BSTNode* node, PasswordNode* passwordNode)
     {
-        // If tree is empty, create new node
+        
         if (node == nullptr)
         {
             return new BSTNode(passwordNode);
@@ -172,12 +172,12 @@ struct AccountBST
 
         if (accountName < nodeAccountName)
         {
-            // Insert in left subtree
+            
             node->left = insertHelper(node->left, passwordNode);
         }
         else if (accountName > nodeAccountName)
         {
-            // Insert in right subtree
+            
             node->right = insertHelper(node->right, passwordNode);
         }
         // If accountName == nodeAccountName, do nothing (duplicate)
@@ -185,7 +185,7 @@ struct AccountBST
         return node;
     }
 
-    // Insert pointer to PasswordNode into BST
+    
     void insert(PasswordNode* passwordNode)
     {
         root = insertHelper(root, passwordNode);
@@ -237,7 +237,7 @@ struct AccountBST
         }
         else
         {
-            // Found the node to delete
+            
             // Check if it's the exact same PasswordNode pointer
             if (node->passwordNodePtr == passwordNodeToDelete)
             {
@@ -247,21 +247,21 @@ struct AccountBST
                     delete node;
                     return nullptr;
                 }
-                // Case 2: One child - only left child exists
+                // Case 2: One children
                 else if (node->right == nullptr)
                 {
                     BSTNode* temp = node->left;
                     delete node;
                     return temp;
                 }
-                // Case 3: One child - only right child exists
+                
                 else if (node->left == nullptr)
                 {
                     BSTNode* temp = node->right;
                     delete node;
                     return temp;
                 }
-                // Case 4: Two children - get inorder successor (smallest in right subtree)
+                // Case 3 get inorder successor (smallest in right subtree)
                 else
                 {
                     BSTNode* temp = node->right;
