@@ -158,7 +158,6 @@ struct AccountBST
         root = nullptr;
     }
 
-    // Helper function for recursive insertion
     BSTNode* insertHelper(BSTNode* node, PasswordNode* passwordNode)
     {
         // If tree is empty, create new node
