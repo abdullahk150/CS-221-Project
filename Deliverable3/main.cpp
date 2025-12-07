@@ -267,7 +267,7 @@ struct AccountBST
                     delete node;
                     return temp;
                 }
-                // Case 3: One child - only right child exists
+
                 else if (node->left == nullptr)
                 {
                     BSTNode* temp = node->right;
