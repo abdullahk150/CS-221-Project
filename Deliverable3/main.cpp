@@ -1023,7 +1023,6 @@ struct PasswordManager
     }
 };
 
-// ==================== MAIN FUNCTION ====================
 
 int main() 
 {
