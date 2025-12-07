@@ -461,7 +461,7 @@ bool checkAndSuggestStrength(const string& password)
     {
         cout << "   - Symbols (!@#$%^&* etc.)\n";
     }
-    
+
     return false;
 }
 
@@ -515,10 +515,13 @@ bool verifyPassword()
     cout << "\nEnter your password to view passwords: ";
     cin >> inputPassword;
     
-    if (currentUser && inputPassword == currentUser->password) {
+    if (currentUser && inputPassword == currentUser->password) 
+    {
         cout << "✅ Password verified!\n";
         return true;
-    } else {
+    } 
+    else 
+    {
         cout << "❌ Incorrect password! Access denied.\n";
         return false;
     }
