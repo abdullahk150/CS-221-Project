@@ -158,7 +158,6 @@ struct AccountBST
         root = nullptr;
     }
 
-    // Helper function for recursive insertion
     BSTNode* insertHelper(BSTNode* node, PasswordNode* passwordNode)
     {
         // If tree is empty, create new node
@@ -532,7 +531,6 @@ bool logout()
     return false;
 }
 
-// ==================== PASSWORD MANAGER ====================
 
 struct PasswordManager 
 {
@@ -1010,7 +1008,7 @@ struct PasswordManager
         }
     }
 
-    // Clear all passwords
+    
     void clearAllPasswords() 
     {
         PasswordNode* temp = head;
@@ -1024,7 +1022,6 @@ struct PasswordManager
     }
 };
 
-// ==================== MAIN FUNCTION ====================
 
 int main() 
 {
