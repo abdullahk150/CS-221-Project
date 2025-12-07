@@ -93,40 +93,48 @@ const int MAX_VIEW_HISTORY = 10;
 struct ViewAttemptQueue
 {
     ViewAttempt buffer[MAX_VIEW_HISTORY];
-    int count;
-    int startIndex;
+    int front;  // Points to the oldest item
+    int rear;   // Points to where next item will be inserted
+    int count;  // Number of items currently in queue
 
     ViewAttemptQueue()
     {
+        front = 0;
+        rear = 0;
         count = 0;
-        startIndex = 0;
     }
 
-    void push(ViewAttempt attempt)
+    void enqueue(ViewAttempt attempt)
     {
-        if (count < MAX_VIEW_HISTORY)
+        // If queue is full, remove oldest item first (move front forward)
+        if (count == MAX_VIEW_HISTORY)
         {
-            int insertIndex = (startIndex + count) % MAX_VIEW_HISTORY;
-            buffer[insertIndex] = attempt;
-            ++count;
+            front = (front + 1) % MAX_VIEW_HISTORY;
         }
         else
         {
-            buffer[startIndex] = attempt;
-            startIndex = (startIndex + 1) % MAX_VIEW_HISTORY;
+            count++;
         }
+        
+        // Add new item at rear
+        buffer[rear] = attempt;
+        rear = (rear + 1) % MAX_VIEW_HISTORY;
     }
 
     bool getFromEnd(int reverseIndex, ViewAttempt& out) const
     {
-        if (reverseIndex >= count) 
+        // reverseIndex 0 = most recent, 1 = second most recent, etc.
+        if (reverseIndex >= count || reverseIndex < 0)
         {
             return false;
         }
-
-        int lastIndex = (startIndex + count - 1) % MAX_VIEW_HISTORY;
-        int idx = (lastIndex + MAX_VIEW_HISTORY - (reverseIndex % MAX_VIEW_HISTORY)) % MAX_VIEW_HISTORY;
-        out = buffer[idx];
+        
+        // Most recent item is at (rear - 1 + MAX) % MAX
+        // Go backwards: (rear - 1 - reverseIndex + MAX) % MAX
+        int mostRecentPos = (rear - 1 + MAX_VIEW_HISTORY) % MAX_VIEW_HISTORY;
+        int targetPos = (mostRecentPos - reverseIndex + MAX_VIEW_HISTORY) % MAX_VIEW_HISTORY;
+        
+        out = buffer[targetPos];
         return true;
     }
 
@@ -142,7 +150,7 @@ struct BSTNode
     PasswordNode* passwordNodePtr;  // Pointer to the actual PasswordNode in linked list
     BSTNode* left;
     BSTNode* right;
-    
+
     BSTNode(PasswordNode* ptr)
     {
         passwordNodePtr = ptr;
@@ -151,20 +159,21 @@ struct BSTNode
     }
 };
 
-// Binary Search Tree structure for storing account names (stores pointers to PasswordNode)
+// Binary Search Tree structure for account names (stores pointers to PasswordNode)
 struct AccountBST
 {
     BSTNode* root;
 
-
+    // Constructor
     AccountBST()
     {
         root = nullptr;
     }
 
+    // Helper function for recursive insertion
     BSTNode* insertHelper(BSTNode* node, PasswordNode* passwordNode)
     {
-        
+        // If tree is empty, create new node
         if (node == nullptr)
         {
             return new BSTNode(passwordNode);
@@ -176,12 +185,12 @@ struct AccountBST
 
         if (accountName < nodeAccountName)
         {
-            
+            // Insert in left subtree
             node->left = insertHelper(node->left, passwordNode);
         }
         else if (accountName > nodeAccountName)
         {
-            
+            // Insert in right subtree
             node->right = insertHelper(node->right, passwordNode);
         }
         // If accountName == nodeAccountName, do nothing (duplicate)
@@ -189,7 +198,7 @@ struct AccountBST
         return node;
     }
 
-    
+    // Insert pointer to PasswordNode into BST
     void insert(PasswordNode* passwordNode)
     {
         root = insertHelper(root, passwordNode);
@@ -241,7 +250,7 @@ struct AccountBST
         }
         else
         {
-            
+            // Found the node to delete
             // Check if it's the exact same PasswordNode pointer
             if (node->passwordNodePtr == passwordNodeToDelete)
             {
@@ -251,21 +260,21 @@ struct AccountBST
                     delete node;
                     return nullptr;
                 }
-                // Case 2: One children
+                // Case 2: One child - only left child exists
                 else if (node->right == nullptr)
                 {
                     BSTNode* temp = node->left;
                     delete node;
                     return temp;
                 }
-                
+                // Case 3: One child - only right child exists
                 else if (node->left == nullptr)
                 {
                     BSTNode* temp = node->right;
                     delete node;
                     return temp;
                 }
-                // Case 3 get inorder successor (smallest in right subtree)
+                // Case 4: Two children - get inorder successor (smallest in right subtree)
                 else
                 {
                     BSTNode* temp = node->right;
@@ -331,7 +340,7 @@ ActionStack redoStack;
 
 void recordViewAttempt(bool success)
 {
-    viewAttempts.push({ success });
+    viewAttempts.enqueue({ success });
 }
 
 bool lastKViewAttemptsFailed(int k)
@@ -357,7 +366,7 @@ string xorCipher(const string& data, const string& key)
     }
 
     string out = data;
-    for (int i = 0; i < data.size(); ++i)
+    for (size_t i = 0; i < data.size(); ++i)
     {
         out[i] = static_cast<char>(data[i] ^ key[i % key.size()]);
     }
@@ -535,10 +544,11 @@ bool logout()
     return false;
 }
 
+// ==================== PASSWORD MANAGER ====================
 
 struct PasswordManager 
 {
-    PasswordNode* head = nullptr;
+    PasswordNode* head;
     AccountBST bst;  // BST stores pointers to PasswordNodes for fast searching
 
     PasswordManager() 
@@ -581,8 +591,8 @@ struct PasswordManager
 
     // Add a new password
     void addPassword() 
-    {   
-        cin.ignore();
+    {
+        cin.ignore(); // Clear the input buffer (removes leftover newline from previous cin >> choice)
         string account, pass;
         
         // Loop until non-empty account name is entered
@@ -617,18 +627,13 @@ struct PasswordManager
         
         PasswordNode* newNode = new PasswordNode(account, encrypted);
 
-        if (head == nullptr) 
+        if (!head) 
         {
             head = newNode;
-        } 
-        else 
+        } else 
         {
             PasswordNode* temp = head;
-            while (temp->next != nullptr) 
-            {
-               temp = temp->next;
-            }
-            
+            while (temp->next) temp = temp->next;
             temp->next = newNode;
         }
 
@@ -641,7 +646,7 @@ struct PasswordManager
         action.accountName = account;
         action.newPassword = encrypted;
         undoStack.push(action);
-        redoStack.clear(); 
+        redoStack.clear(); // Clear redo stack after new action
 
         cout << "✅ Password for " << account << " added successfully!\n";
     }
@@ -666,7 +671,7 @@ struct PasswordManager
             return;
         }
 
-      
+        // Get all PasswordNode pointers from BST in sorted order
         const int MAX_ACCOUNTS = 1000;
         PasswordNode* sortedNodes[MAX_ACCOUNTS];
         int nodeCount = bst.getAllNodes(sortedNodes, MAX_ACCOUNTS);
@@ -762,7 +767,7 @@ struct PasswordManager
         action.accountName = account;
         action.oldPassword = nodeToDelete->password; // Store encrypted password
         undoStack.push(action);
-        redoStack.clear(); 
+        redoStack.clear(); // Clear redo stack after new action
 
         // Remove from BST first (just removes the BST node, not the PasswordNode)
         bst.remove(nodeToDelete);
@@ -920,8 +925,7 @@ struct PasswordManager
             if (!head)
             {
                 head = newNode;
-            } 
-            else 
+            } else 
             {
                 PasswordNode* temp = head;
                 while (temp->next) temp = temp->next;
@@ -1012,7 +1016,7 @@ struct PasswordManager
         }
     }
 
-    
+    // Clear all passwords
     void clearAllPasswords() 
     {
         PasswordNode* temp = head;
@@ -1026,6 +1030,7 @@ struct PasswordManager
     }
 };
 
+// ==================== MAIN FUNCTION ====================
 
 int main() 
 {
