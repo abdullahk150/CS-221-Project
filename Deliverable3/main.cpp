@@ -1009,7 +1009,7 @@ struct PasswordManager
         }
     }
 
-    // Clear all passwords
+    
     void clearAllPasswords() 
     {
         PasswordNode* temp = head;
