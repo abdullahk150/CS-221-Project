@@ -41,7 +41,7 @@ struct Action
 // Stack for Undo/Redo operations (array-based)
 struct ActionStack 
 {
-    Action actions[100];    // Max 100 actions
+    Action actions[50];    // Max 50 actions
     int top;
     
     void init() {
@@ -49,7 +49,7 @@ struct ActionStack
     }
     
     void push(Action action) {
-        if (top < 99) {
+        if (top < 49) {
             actions[++top] = action;
         } else {
             cout << "⚠️ Undo history full!\n";
@@ -118,6 +118,186 @@ struct ViewAttemptQueue
     }
 
     size_t size() const { return count; }
+};
+
+// BST Node that stores a pointer to PasswordNode
+struct BSTNode
+{
+    PasswordNode* passwordNodePtr;  // Pointer to the actual PasswordNode in linked list
+    BSTNode* left;
+    BSTNode* right;
+
+    BSTNode(PasswordNode* ptr)
+    {
+        passwordNodePtr = ptr;
+        left = nullptr;
+        right = nullptr;
+    }
+};
+
+// Binary Search Tree structure for account names (stores pointers to PasswordNode)
+struct AccountBST
+{
+    BSTNode* root;
+
+    // Constructor
+    AccountBST()
+    {
+        root = nullptr;
+    }
+
+    // Helper function for recursive insertion
+    BSTNode* insertHelper(BSTNode* node, PasswordNode* passwordNode)
+    {
+        // If tree is empty, create new node
+        if (node == nullptr)
+        {
+            return new BSTNode(passwordNode);
+        }
+
+        // Compare based on account name from the PasswordNode
+        string accountName = passwordNode->accountName;
+        string nodeAccountName = node->passwordNodePtr->accountName;
+
+        if (accountName < nodeAccountName)
+        {
+            // Insert in left subtree
+            node->left = insertHelper(node->left, passwordNode);
+        }
+        else if (accountName > nodeAccountName)
+        {
+            // Insert in right subtree
+            node->right = insertHelper(node->right, passwordNode);
+        }
+        // If accountName == nodeAccountName, do nothing (duplicate)
+
+        return node;
+    }
+
+    // Insert pointer to PasswordNode into BST
+    void insert(PasswordNode* passwordNode)
+    {
+        root = insertHelper(root, passwordNode);
+    }
+
+    // Search for a PasswordNode by account name
+    PasswordNode* search(const string& accountName)
+    {
+        BSTNode* current = root;
+        while (current != nullptr)
+        {
+            string currentAccountName = current->passwordNodePtr->accountName;
+            if (accountName == currentAccountName)
+            {
+                return current->passwordNodePtr;
+            }
+            else if (accountName < currentAccountName)
+            {
+                current = current->left;
+            }
+            else
+            {
+                current = current->right;
+            }
+        }
+        return nullptr;
+    }
+
+    // Helper function to find and delete a node from BST
+    BSTNode* deleteHelper(BSTNode* node, PasswordNode* passwordNodeToDelete)
+    {
+        if (node == nullptr) return nullptr;
+
+        string accountName = passwordNodeToDelete->accountName;
+        string nodeAccountName = node->passwordNodePtr->accountName;
+
+        if (accountName < nodeAccountName)
+        {
+            node->left = deleteHelper(node->left, passwordNodeToDelete);
+        }
+        else if (accountName > nodeAccountName)
+        {
+            node->right = deleteHelper(node->right, passwordNodeToDelete);
+        }
+        else
+        {
+            // Found the node to delete
+            // Check if it's the exact same PasswordNode pointer
+            if (node->passwordNodePtr == passwordNodeToDelete)
+            {
+                // Case 1: No children
+                if (node->right == nullptr && node->left == nullptr)
+                {
+                    delete node;
+                    return nullptr;
+                }
+                // Case 2: One child - only left child exists
+                else if (node->right == nullptr)
+                {
+                    BSTNode* temp = node->left;
+                    delete node;
+                    return temp;
+                }
+                // Case 3: One child - only right child exists
+                else if (node->left == nullptr)
+                {
+                    BSTNode* temp = node->right;
+                    delete node;
+                    return temp;
+                }
+                // Case 4: Two children - get inorder successor (smallest in right subtree)
+                else
+                {
+                    BSTNode* temp = node->right;
+                    while (temp->left != nullptr)
+                    {
+                        temp = temp->left;
+                    }
+
+                    // Copy the pointer (not the data)
+                    node->passwordNodePtr = temp->passwordNodePtr;
+                    
+                    // Delete the inorder successor
+                    node->right = deleteHelper(node->right, temp->passwordNodePtr);
+                }
+            }
+        }
+        return node;
+    }
+
+    // Delete a PasswordNode pointer from BST
+    void remove(PasswordNode* passwordNode)
+    {
+        root = deleteHelper(root, passwordNode);
+    }
+
+    // Helper function for in-order traversal to collect pointers
+    void inOrderCollect(BSTNode* node, PasswordNode* nodes[], int& index, int maxSize)
+    {
+        if (node != nullptr && index < maxSize)
+        {
+            inOrderCollect(node->left, nodes, index, maxSize);
+            if (index < maxSize)
+            {
+                nodes[index++] = node->passwordNodePtr;
+            }
+            inOrderCollect(node->right, nodes, index, maxSize);
+        }
+    }
+
+    // Get all PasswordNode pointers in sorted order (returns count)
+    int getAllNodes(PasswordNode* nodes[], int maxSize)
+    {
+        int count = 0;
+        inOrderCollect(root, nodes, count, maxSize);
+        return count;
+    }
+
+    // Check if BST is empty
+    bool isEmpty()
+    {
+        return root == nullptr;
+    }
 };
 
 // ==================== GLOBAL VARIABLES ====================
@@ -314,6 +494,7 @@ bool logout()
 struct PasswordManager 
 {
     PasswordNode* head;
+    AccountBST bst;  // BST stores pointers to PasswordNodes for fast searching
 
     PasswordManager() 
     {
@@ -411,6 +592,9 @@ struct PasswordManager
             temp->next = newNode;
         }
 
+        // Insert pointer to PasswordNode into BST (for fast searching and sorted display)
+        bst.insert(newNode);
+
         // Record action for undo
         Action action;
         action.actionType = "ADD";
@@ -422,7 +606,7 @@ struct PasswordManager
         cout << "✅ Password for " << account << " added successfully!\n";
     }
 
-    // View all passwords
+    // View all passwords (using BST for sorted display)
     void viewPasswords() 
     {
         if (!verifyPassword()) 
@@ -436,29 +620,31 @@ struct PasswordManager
         }
         recordViewAttempt(true);
         
-        if (!head) 
+        if (!head || bst.isEmpty()) 
         {
             cout << "\nNo passwords saved yet.\n";
             return;
         }
 
-        PasswordNode* temp = head;
-        cout << "\n========== Your Stored Passwords ==========\n";
-        int count = 1;
-        while (temp) 
+        // Get all PasswordNode pointers from BST in sorted order
+        const int MAX_ACCOUNTS = 1000;
+        PasswordNode* sortedNodes[MAX_ACCOUNTS];
+        int nodeCount = bst.getAllNodes(sortedNodes, MAX_ACCOUNTS);
+
+        cout << "\n========== Your Stored Passwords (Sorted by Account Name) ==========\n";
+        for (int i = 0; i < nodeCount; i++)
         {
-            cout << count << ". Account: " << temp->accountName << endl;
-            cout << "   Password: " << decryptPassword(temp->password) << endl;
+            PasswordNode* node = sortedNodes[i];
+            cout << (i + 1) << ". Account: " << node->accountName << endl;
+            cout << "   Password: " << decryptPassword(node->password) << endl;
             cout << "   ------------------------------------------\n";
-            temp = temp->next;
-            count++;
         }
     }
 
-    // Edit existing password
+    // Edit existing password (uses BST for fast searching)
     void editPassword()
     {
-        if (!head)
+        if (!head || bst.isEmpty())
         {
             cout << "\nNo passwords to edit.\n";
             return;
@@ -469,7 +655,8 @@ struct PasswordManager
         cout << "\nEnter Account Name to edit: ";
         getline(cin, account);
 
-        PasswordNode* node = findNodeByAccount(account);
+        // Use BST to quickly find the PasswordNode
+        PasswordNode* node = bst.search(account);
         if (!node)
         {
             cout << "❌ Account not found.\n";
@@ -506,10 +693,10 @@ struct PasswordManager
         cout << "✅ Password updated for " << account << "!\n";
     }
 
-    // Delete a password
+    // Delete a password (removes from both BST and linked list)
     void deletePassword()
     {
-        if (!head)
+        if (!head || bst.isEmpty())
         {
             cout << "\nNo passwords to delete.\n";
             return;
@@ -520,17 +707,10 @@ struct PasswordManager
         cout << "\nEnter Account Name to delete: ";
         getline(cin, account);
 
-        PasswordNode* temp = head;
-        PasswordNode* prev = nullptr;
-
-        // Search for the node
-        while (temp && temp->accountName != account)
-        {
-            prev = temp;
-            temp = temp->next;
-        }
-
-        if (!temp)
+        // Use BST to quickly find the PasswordNode pointer
+        PasswordNode* nodeToDelete = bst.search(account);
+        
+        if (!nodeToDelete)
         {
             cout << "❌ Account not found.\n";
             return;
@@ -540,20 +720,37 @@ struct PasswordManager
         Action action;
         action.actionType = "DELETE";
         action.accountName = account;
-        action.oldPassword = temp->password; // Store encrypted password
+        action.oldPassword = nodeToDelete->password; // Store encrypted password
         undoStack.push(action);
         redoStack.clear(); // Clear redo stack after new action
 
-        // Delete the node
-        if (prev == nullptr) 
+        // Remove from BST first (just removes the BST node, not the PasswordNode)
+        bst.remove(nodeToDelete);
+
+        // Now remove from linked list (this deletes the actual PasswordNode)
+        PasswordNode* temp = head;
+        PasswordNode* prev = nullptr;
+
+        while (temp && temp != nodeToDelete)
         {
-            head = temp->next;
-        } else 
-        {
-            prev->next = temp->next;
+            prev = temp;
+            temp = temp->next;
         }
 
-        delete temp;
+        if (temp == nodeToDelete)
+        {
+            if (prev == nullptr) 
+            {
+                head = temp->next;
+            } 
+            else 
+            {
+                prev->next = temp->next;
+            }
+
+            delete temp;  // Delete the actual PasswordNode (account name and password)
+        }
+
         cout << "✅ Password for " << account << " deleted successfully!\n";
     }
 
@@ -571,8 +768,7 @@ struct PasswordManager
 
         if (action.actionType == "ADD")
         {
-            // Remove the added password
-            // Find the node with matching account name AND password (to handle duplicates)
+            // Find the node with matching account name AND password
             PasswordNode* temp = head;
             PasswordNode* prev = nullptr;
 
@@ -584,12 +780,16 @@ struct PasswordManager
 
             if (temp)
             {
+                // Remove from BST first
+                bst.remove(temp);
+
+                // Then remove from linked list
                 if (prev == nullptr)
                     head = temp->next;
                 else
                     prev->next = temp->next;
 
-                delete temp;
+                delete temp;  // Delete the actual PasswordNode
                 cout << "✅ Undo: Removed password for " << action.accountName << "\n";
             }
             else
@@ -599,8 +799,8 @@ struct PasswordManager
         }
         else if (action.actionType == "EDIT")
         {
-            // Restore old password
-            PasswordNode* node = findNodeByAccount(action.accountName);
+            // Restore old password (use BST for fast search)
+            PasswordNode* node = bst.search(action.accountName);
             if (node)
             {
                 // Verify the current password matches what we expect (the newPassword from the action)
@@ -634,6 +834,9 @@ struct PasswordManager
                 temp->next = newNode;
             }
 
+            // Re-insert into BST
+            bst.insert(newNode);
+
             cout << "✅ Undo: Restored password for " << action.accountName << "\n";
         }
     }
@@ -652,8 +855,8 @@ struct PasswordManager
 
         if (action.actionType == "ADD")
         {
-            // Check if account already exists
-            PasswordNode* existing = findNodeByAccount(action.accountName);
+            // Check if account already exists (use BST for fast search)
+            PasswordNode* existing = bst.search(action.accountName);
             if (existing)
             {
                 // Check if it's the same password (from a previous redo)
@@ -684,13 +887,16 @@ struct PasswordManager
                 temp->next = newNode;
             }
 
+            // Re-insert into BST
+            bst.insert(newNode);
+
             cout << "✅ Redo: Re-added password for " << action.accountName << "\n";
             success = true;
         }
         else if (action.actionType == "EDIT")
         {
-            // Reapply new password
-            PasswordNode* node = findNodeByAccount(action.accountName);
+            // Reapply new password (use BST for fast search)
+            PasswordNode* node = bst.search(action.accountName);
             if (node)
             {
                 // Verify the current password matches the oldPassword (what we expect after undo)
@@ -716,24 +922,37 @@ struct PasswordManager
         }
         else if (action.actionType == "DELETE")
         {
-            // Delete again - find by account name and password to ensure correct deletion
+            // Use BST to find the node quickly
+            PasswordNode* nodeToDelete = bst.search(action.accountName);
+            
+            if (!nodeToDelete || nodeToDelete->password != action.oldPassword)
+            {
+                cout << "⚠️ Redo: Could not find password for " << action.accountName << " to delete.\n";
+                redoStack.push(action); // Put it back
+                return;
+            }
+
+            // Remove from BST first
+            bst.remove(nodeToDelete);
+
+            // Then remove from linked list
             PasswordNode* temp = head;
             PasswordNode* prev = nullptr;
 
-            while (temp && (temp->accountName != action.accountName || temp->password != action.oldPassword))
+            while (temp && temp != nodeToDelete)
             {
                 prev = temp;
                 temp = temp->next;
             }
 
-            if (temp)
+            if (temp == nodeToDelete)
             {
                 if (prev == nullptr)
                     head = temp->next;
                 else
                     prev->next = temp->next;
 
-                delete temp;
+                delete temp;  // Delete the actual PasswordNode
                 cout << "✅ Redo: Deleted password for " << action.accountName << "\n";
                 success = true;
             }
