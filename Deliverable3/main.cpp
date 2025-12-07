@@ -532,7 +532,6 @@ bool logout()
     return false;
 }
 
-// ==================== PASSWORD MANAGER ====================
 
 struct PasswordManager 
 {
