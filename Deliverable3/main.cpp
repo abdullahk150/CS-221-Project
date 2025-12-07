@@ -2,7 +2,6 @@
 #include <string>
 using namespace std;
 
-// ==================== DATA STRUCTURES ====================
 
 struct PasswordNode
 {
@@ -10,7 +9,8 @@ struct PasswordNode
     string password;
     PasswordNode* next;
 
-    PasswordNode(string acc, string pass) {
+    PasswordNode(string acc, string pass) 
+    {
         accountName = acc;
         password = pass;
         next = nullptr;
@@ -41,35 +41,44 @@ struct Action
 // Stack for Undo/Redo operations (array-based)
 struct ActionStack 
 {
-    Action actions[50];    // Max 50 actions
+    Action actions[50];   
     int top;
     
-    void init() {
+    void init() 
+    {
         top = -1;
     }
     
-    void push(Action action) {
-        if (top < 49) {
+    void push(Action action) 
+    {
+        if (top < 49) 
+        {
             actions[++top] = action;
-        } else {
+        } else 
+        {
             cout << "⚠️ Undo history full!\n";
         }
     }
     
-    Action pop() {
-        if (top >= 0) {
+    Action pop() 
+    {
+        if (top >= 0) 
+        {
             return actions[top--];
         }
+
         Action empty;
         empty.actionType = "NONE";
         return empty;
     }
     
-    bool isEmpty() {
+    bool isEmpty() 
+    {
         return top == -1;
     }
     
-    void clear() {
+    void clear() 
+    {
         top = -1;
     }
 };
